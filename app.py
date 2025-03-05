@@ -51,3 +51,41 @@ def get_user_input():
     })
 
     return user_input_df, model_input_df
+
+
+# Get user input
+display_data, prediction_data = get_user_input()
+
+# Display user parameters
+section_divider()
+st.header("Your Parameters")
+loading_animation()
+st.write(display_data)
+
+# Predict calorie consumption
+predicted_calories = calorie_prediction_model.predict(prediction_data)
+
+# Display prediction
+section_divider()
+st.header("Prediction:")
+loading_animation()
+st.write(f"{round(predicted_calories[0], 2)} **kilocalories**")
+
+# Load processed dataset
+section_divider()
+st.header("Similar Results")
+dataset = pd.read_csv('processed.csv')
+loading_animation()
+
+# Filter dataset to find similar calorie consumption records
+calorie_range = (predicted_calories[0] - 10, predicted_calories[0] + 10)
+similar_entries = dataset.query("`Calorie Consumption` >= @calorie_range[0] and `Calorie Consumption` <= @calorie_range[1]")
+
+# Ensure at most 5 entries are displayed
+st.write(similar_entries.head(5))
+
+# Calculate percentile comparisons efficiently
+st.write(f"You are older than {dataset['Age'].lt(display_data['Age'].values[0]).mean() * 100:.2f}% of other people.")
+st.write(f"Your exercise duration is higher than {dataset['Duration'].lt(display_data['Duration'].values[0]).mean() * 100:.2f}% of other people.")
+st.write(f"You have a higher heart rate than {dataset['Heart Rate'].lt(display_data['Heart Rate'].values[0]).mean() * 100:.2f}% of other people during exercise.")
+st.write(f"You have a higher body temperature than {dataset['Body Temperature'].lt(display_data['Body Temperature'].values[0]).mean() * 100:.2f}% of other people during exercise.")
